@@ -3,7 +3,7 @@ import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as io from '@actions/io';
 import * as hc from '@actions/http-client';
-import {chmodSync} from 'fs';
+import {accessSync, chmodSync, constants} from 'fs';
 import path from 'path';
 import {fileURLToPath} from 'url';
 import os from 'os';
@@ -334,8 +334,17 @@ export class DotnetInstallScript {
 }
 
 export abstract class DotnetInstallDir {
+  public static getlinuxdefaultpath() {
+    try {
+      accessSync('/usr/share/dotnet', constants.W_OK);
+      return '/usr/share/dotnet';
+    } catch {
+      return path.join(process.env['HOME'] + '', '.dotnet');
+    }
+  }
+
   private static readonly default = {
-    linux: '/usr/share/dotnet',
+    linux: DotnetInstallDir.getlinuxdefaultpath(),
     mac: path.join(process.env['HOME'] + '', '.dotnet'),
     windows: path.join(process.env['PROGRAMFILES'] + '', 'dotnet')
   };
